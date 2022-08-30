@@ -64,3 +64,158 @@ const routeAction = async (action) => {
     else process.exit()
 }
 
+const getColumn = (column, table) => {
+    return new Promise(resolve => {
+        db.query(`SELECT ${table}.${column}, ${table}.id FROM ${table}`, (err, result) => {
+            resolve(result)
+        })
+    })
+}
+
+// Updating role of employees
+const updateEmployee = () => {
+    return new Promise(async resolve => {
+        const roles = []
+        const tempHolder = await getColumn("title","role")
+        tempHolder.forEach((elem) => {
+            roles.push({"name": elem.title, "id": elem.id})
+        })
+        const e_first = await getColumn("first_name","employee")
+        const e_last = await getColumn("last_name","employee")
+        const employees = []
+        e_first.forEach((elem,index) => {
+            employees.push({"name": `${elem.first_name} ${e_last[index].last_name}`, "id" : elem.id}) 
+        })
+        inquirer
+            .prompt([
+                {
+                    type: "list",
+                    name: "name",
+                    message: "Which employee's role do you want to update?",
+                    choices: employees
+                },
+                {
+                    type: "list",
+                    name: "role",
+                    message: "Which role do you want to assign the selected employee?",
+                    choices: roles
+                }
+            ])
+            .then(response => {
+                const {name, role} = response
+                let rId
+                let eId
+                //Convert user input for emplyee and role to corresponding id
+                roles.forEach((elem) => {
+                    if(elem.name === role) rId = elem.id
+                })
+                employees.forEach((elem) => {
+                    if(elem.name === name) eId = elem.id
+                    if(name === "None") eId = null
+                })
+                //Run SQL code to update db
+                db.query(`UPDATE employee SET role_id = ? WHERE id = ?`, [rId,eId],(err,result) =>{
+                    err ? console.log(err) : console.log(`Employee ${name} has been updated.`)
+                    resolve("resolve")
+                })
+            })
+    })
+}
+
+// Add employee function
+const addEmployee = () => {
+    return new Promise(async resolve => {
+        const roles = []
+        const tempHolder = await getColumn("title","role")
+        tempHolder.forEach((elem) => {
+            roles.push({"name": elem.title, "id": elem.id})
+        })
+        const m_first = await getColumn("first_name","employee")
+        const m_last = await getColumn("last_name","employee")
+        const managers = []
+        m_first.forEach((elem,index) => {
+            managers.push({"name": `${elem.first_name} ${m_last[index].last_name}`, "id" : elem.id}) 
+        })
+        inquirer
+            .prompt([
+                {
+                    type: "input",
+                    name: "first_name",
+                    message: "What is the employee's first name?"
+                },
+                {
+                    type: "input",
+                    name: "last_name",
+                    message: "What is the employee's last name?"
+                },
+                {
+                    type: "list",
+                    name: "role",
+                    message: "What is the emplyee's role?",
+                    choices: roles
+                },
+                {
+                    type: "list",
+                    name: "manager",
+                    message: "Who is the employee's manager?",
+                    choices: ["None", ...managers]
+                }
+            ])
+            .then(response => {
+                const {first_name, last_name, role, manager} = response
+                let rId
+                let mId
+                roles.forEach((elem) => {
+                    if(elem.name === role) rId = elem.id
+                })
+                managers.forEach((elem) => {
+                    if(elem.name === manager) mId = elem.id
+                    if(manager === "None") mId = null
+                })
+                db.query(`INSERT INTO employee (first_name,last_name,role_id,manager_id)
+                VALUES (?,?,?,?)`,[first_name,last_name,rId,mId], (err,result) => {
+                    err ? console.log(err) : console.log(`Employee '${first_name} ${last_name}' was added to the database`)
+                    resolve("resolve")
+                })
+            })
+    })
+}
+
+// Add new role
+const addRole = () => {
+    return new Promise(async resolve => {
+        const depts = await getColumn("name", "department")
+        inquirer
+            .prompt([
+                {
+                    type: "input",
+                    name: "title",
+                    message: "What is the name of the role?"
+                },
+                {
+                    type: "number",
+                    name: "salary",
+                    message: "What is the salary for this role?"
+                },
+                {
+                    type: "list",
+                    name: "department",
+                    message: "Which department does this role belong to?",
+                    choices: depts
+                }
+            ])
+            .then((response => {
+                const {title,salary,department} = response
+                let id
+                depts.forEach((elem) => {
+                    if(elem.name === department) id = elem.id
+                })
+                
+                db.query(`INSERT INTO role (title, salary, department_id)
+                VALUES (?,?,?)`,[title,salary,id],(err,result) => {
+                    console.log(`New role '${title}' added to database`)
+                    resolve("resolve")
+                })
+            }))
+    })
+}
