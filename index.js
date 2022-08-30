@@ -219,3 +219,70 @@ const addRole = () => {
             }))
     })
 }
+
+//Add new department
+const addDepartment = () => {
+    return new Promise(resolve => {
+        inquirer
+            .prompt([
+                {
+                  type: "input",
+                  name: "name",
+                  message: "What is the name of the department?"  
+                }
+            ])
+            .then(response => {
+                const {name} = response
+                const formattedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()
+                db.query(`INSERT INTO department (name)
+                VALUES (?)`,formattedName,(err,result) => {
+                    console.log(`Department ${name.toLowerCase()} added`)
+                    resolve("resolve")
+                })
+            })
+    })
+}
+
+//Display table of all employees 
+const viewEmployees = () => {
+    return new Promise(resolve => {
+        //SQL command to select specific headers, connect table based on id, then export table and view in console
+        db.query(`
+        SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(m.first_name," ",m.last_name) AS manager
+        FROM employee 
+        JOIN role on employee.role_id = role.id
+        JOIN department on role.department_id = department.id
+        LEFT JOIN employee m on m.id = employee.manager_id`,(err,result) => {
+            console.log('\n')
+            err ? console.log(err) : console.table(result)
+            console.log('\n')
+            resolve("resolve")
+        })
+    })
+}
+
+//Display table of all roles
+const viewRoles = () => {
+    return new Promise(resolve => {
+        db.query(`SELECT role.id, role.title, department.name AS department, role.salary FROM role JOIN department on role.department_id = department.id`, (err,result) => {
+            console.log('\n')
+            err ? console.log(err) : console.table(result)
+            console.log('\n')
+            resolve("resolved")
+        })
+    })
+}
+
+//Table of all departments
+const viewDepartments = () => {
+    return new Promise(resolve => {
+        db.query(`SELECT * FROM department`, (err,result) => {
+            console.log('\n')
+            err ? console.log(err) : console.table(result)
+            console.log('\n')
+            resolve("resolved")
+        })
+    })
+}
+
+promptAction()
