@@ -23,7 +23,7 @@ const promptAction = () => {
             type: 'list',
             name: 'action',
             message: "What would you like to do?",
-            choices:["View all departments","View all roles","View all employees","Add a department","Add a role","Add an employee","Update an employee","Exit"]
+            choices:["view all departments","view all roles","view all employees","add a department","add a role","add an employee","update an employee","exit"]
         }
         ]).then(response => {
             const {action} = response
@@ -33,30 +33,30 @@ const promptAction = () => {
 
 // Await First Action Command
 const routeAction = async (action) => {
-    let exit = false
+    let exit = false;
     switch(action){
         case "exit":
-            exit = true
+            exit = true;
             break
-        case "View all departments":
+        case "view all departments":
             await viewDepartments()
             break
-        case "View all roles":
+        case "view all roles":
             await viewRoles()
             break
-        case "View all employees":
+        case "view all employees":
             await viewEmployees()
             break
-        case "Add a department":
+        case "add a department":
             await addDepartment()
             break
-        case "Add a role":
+        case "add a role":
             await addRole()
             break
-        case "Add an employee":
+        case "add an employee":
             await addEmployee()
             break
-        case "Update an employee":
+        case "update an employee":
             await updateEmployee()
             break
     }
@@ -285,4 +285,4 @@ const viewDepartments = () => {
     })
 }
 
-promptAction()
+promptAction();
