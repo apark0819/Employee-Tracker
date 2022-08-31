@@ -5,7 +5,6 @@ const cTable = require('console.table')
 require('dotenv').config() 
 
 // Connection to DB
-
 const db = mysql.createConnection(
     {
         host: "localhost",
@@ -25,11 +24,14 @@ const promptAction = () => {
             message: "What would you like to do?",
             choices:["view all departments","view all roles","view all employees","add a department","add a role","add an employee","update an employee","exit"]
         }
-        ]).then(response => {
-            const {action} = response
+        ])
+        .then(response => {
+            const {action} = (response)
             routeAction(action)
+            console.log(response);
         })
 }
+
 
 // Await First Action Command
 const routeAction = async (action) => {
@@ -105,7 +107,6 @@ const updateEmployee = () => {
                 const {name, role} = response
                 let rId
                 let eId
-                //Convert user input for emplyee and role to corresponding id
                 roles.forEach((elem) => {
                     if(elem.name === role) rId = elem.id
                 })
@@ -113,7 +114,6 @@ const updateEmployee = () => {
                     if(elem.name === name) eId = elem.id
                     if(name === "None") eId = null
                 })
-                //Run SQL code to update db
                 db.query(`UPDATE employee SET role_id = ? WHERE id = ?`, [rId,eId],(err,result) =>{
                     err ? console.log(err) : console.log(`Employee ${name} has been updated.`)
                     resolve("resolve")
@@ -246,7 +246,6 @@ const addDepartment = () => {
 //Display table of all employees 
 const viewEmployees = () => {
     return new Promise(resolve => {
-        //SQL command to select specific headers, connect table based on id, then export table and view in console
         db.query(`
         SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(m.first_name," ",m.last_name) AS manager
         FROM employee 
@@ -285,4 +284,11 @@ const viewDepartments = () => {
     })
 }
 
+// async function questions() {
+//     let response = await inquirer.prompt(promptAction);
+//     await promptAction[response.actionType]();
+//     questions();
+// }
+
+// questions();
 promptAction();
