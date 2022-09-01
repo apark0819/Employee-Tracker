@@ -11,7 +11,7 @@ The employee tracker is a command-line application utilizing Node.Js, Inquirer, 
 
 
 ## Example
-![PG1](assets\output\test.gif)
+![PG1](assets\test.gif)
 
 ## License
 MIT
